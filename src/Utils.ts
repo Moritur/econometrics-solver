@@ -44,4 +44,23 @@ export namespace Utils
     {
         array.splice(index, 1);
     }
+
+    /** Returns index of first ocurrence of given element in array. 
+     * If element is not present in the array -1 is returned */
+    export function GetElementIndex<T>(array: T[], element: T): number
+    {
+        for (let i = 0; i < array.length; i++)
+        {
+            if (array[i] == element) return i;
+        }
+
+        return -1;
+    }
+
+    /** Returns provided number as string in subscript */
+    export function NumberToSubscript(value: number): string
+    {
+        if (value > 9 || value < 0 || !Number.isInteger(value)) throw new Error("Value must be integral number from range <0;9>");
+        else return ['₀', '₁', '₂', '₃', '₄', '₅', '₆', '₇', '₈', '₉'][value]
+    }
 }

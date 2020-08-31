@@ -30,15 +30,15 @@ export class CanvasHelper
         context.lineWidth = originalLineWidth;
     }
 
-    public static DrawText(context: CanvasRenderingContext2D, text: string, position: Vector2, size: number, font: string, color: string): void
+    public static DrawText(text: string, position: Vector2, size: number, textAlign: CanvasTextAlign = "left",  font: string = "sans-serif", color: string = "black", context: CanvasRenderingContext2D = this.sharedContext): void
     {
-        let originalFillStyle = context.fillStyle;
-        let originalFont = context.font;
-        let originalTextAlign = context.textAlign;
+        const originalFillStyle = context.fillStyle;
+        const originalFont = context.font;
+        const originalTextAlign = context.textAlign;
 
         context.fillStyle = color;
         context.font = size.toString() + "px " + font;
-        context.textAlign = "center";
+        context.textAlign = textAlign;
         context.fillText(text, position.x, position.y);
 
         context.fillStyle = originalFillStyle;
