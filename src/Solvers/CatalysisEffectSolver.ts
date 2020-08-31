@@ -1,6 +1,7 @@
 import { Solver } from "./Solver";
 import { Matrix, Side, MatrixRows } from "../Matrix";
 import { Vector2 } from "../Vector2";
+import { Utils } from "../Utils";
 
 /** I can't find english name for "efekt katalizy" */
 export class CatalysisEffectSolver extends Solver
@@ -82,7 +83,11 @@ export class CatalysisEffectSolver extends Solver
         }
         //#endregion
 
-        const R0_reg: Matrix = this.CalculateR0_reg(R0);
+        const tmpR0_reg_out: [Matrix, Array<number>] = this.CalculateR0_reg(R0);
+        const R0_reg: Matrix = tmpR0_reg_out[0];
+        const xOrderInR0_reg: Array<number> = tmpR0_reg_out[1];
+
+        const R_reg: Matrix = this.CalculateR_reg(R, R0, R0_reg, xOrderInR0_reg);
 
         //#region display results
 
@@ -91,23 +96,80 @@ export class CatalysisEffectSolver extends Solver
         const R0T = R0.Transpose();
         R0T.DrawNextTo(R, Side.right, "R0");
         R0_reg.Transpose().DrawNextTo(R0T, Side.under, "R0_reg");
+        R_reg.DrawNextTo(R, Side.under, "R_reg");
 
         //#endregion
 
         // throw new Error("Method not implemented.");
     }
 
-    private CalculateR0_reg(R0: Matrix): Matrix
+    private CalculateR0_reg(R0: Matrix): [Matrix, Array<number>]
     {
-        let result: Array<number> = new Array<number>(R0.ColumnNumber);
+        const absR0: Array<number> = new Array<number>(R0.ColumnNumber);
+        const sortedR0: Array<number> = new Array<number>(R0.ColumnNumber);
+        const R0ids: Array<number> = new Array<number>(R0.ColumnNumber);
 
         for (let i = 0; i < R0.ColumnNumber; i++)
         {
-            result[i] = Math.abs(R0.numbers[0][i]);
+            absR0[i] = Math.abs(R0.numbers[0][i]);
+        }
+        
+        const iterations = absR0.length;
+        for (let i = 0; i < iterations; i++)
+        {
+            let index: number = CatalysisEffectSolver.GetGreatestNumberIndex(absR0);
+            R0ids[i] = index;
+            sortedR0[i] = absR0[index];
+            absR0[index] = -1;
+        }
+        console.log(R0ids);
+        return [new Matrix([sortedR0]), R0ids];
+    }
+
+    private CalculateR_reg(R: Matrix, R0: Matrix, R0_reg: Matrix, xOrderInR0_reg: Array<number>): Matrix
+    {
+        const rows: MatrixRows = new MatrixRows(R.RowNumber);
+
+        for (let row = 0; row < R.RowNumber; row++)
+        {
+            rows[row] = new Array<number>(R.ColumnNumber);
         }
 
-        result = result.sort();
+        for (let row = 0; row < R.RowNumber; row++)
+        {
+            for (let col = row; col < R.ColumnNumber; col++)
+            {
+                if (col == row)
+                {
+                    rows[row][col] = 1;
+                }
+                else
+                {
+                    let value: number = R.numbers[xOrderInR0_reg[row]][xOrderInR0_reg[col]]
 
-        return new Matrix([result]);
+                    if (R0.numbers[0][xOrderInR0_reg[row]] < 0) value = -value; 
+                    if (R0.numbers[0][xOrderInR0_reg[col]] < 0) value = -value; 
+
+                    rows[row][col] = value;
+                    rows[col][row] = value;
+                }
+            }
+        }
+
+        return new Matrix(rows);
+    }
+
+    /** Returns index of greatest number in provided array.
+     * If same number appears multiple times returns index of its first occurrence
+     */
+    private static GetGreatestNumberIndex(array: ReadonlyArray<number>): number
+    {
+        let index: number = 0;
+        for (let i = 0; i < array.length; i++)
+        {
+            if (array[i] > array[index]) index = i;
+        }
+
+        return index;
     }
 }

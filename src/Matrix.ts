@@ -10,11 +10,13 @@ export enum Side { above, under, left, right }
 /** Class representing a matrix */
 export class Matrix
 {
+    //#region config
     private static readonly cellPixelSize: number = 40;
     private static readonly labelPixelMargin: number = 6;
     private static readonly matrixPixelMargin: number = 12;
     private static readonly cellContentFont: string = "11px sans-serif";
     private static readonly labelFont: string = "bold 14px sans-serif";
+    //#endregion
 
     /** Numbers contained in matrix. Access them like numbers[row][column] */
     public readonly numbers: ReadonlyArray<ReadonlyArray<number>>;
@@ -51,10 +53,21 @@ export class Matrix
     public constructor(rows: MatrixRows)
     {
         const columnNumber: number = rows[0].length;
-        
-        rows.forEach(row => { if (row.length != columnNumber) throw Error("Inconsistent column number between rows in a matrix"); });
+        const rowsCopy: MatrixRows = new MatrixRows(rows.length);
 
-        this.numbers = rows;
+        for (let row = 0; row < rows.length; row++)
+        {
+            rowsCopy[row] = new Array<number>(columnNumber);
+            if (rows[row].length != columnNumber) throw Error("Inconsistent column number between rows in a matrix");
+
+            for (let col = 0; col < columnNumber; col++)
+            {
+                rowsCopy[row][col] = rows[row][col];
+                if (rows[row][col] == undefined || rows[row][col] == null) throw new Error("Cell content in matrix can't be null/undefined")
+            }
+        }
+
+        this.numbers = rowsCopy;
     }
 
     /** Draws this matrix on HTML canvas using provided rendering context and position
@@ -132,6 +145,22 @@ export class Matrix
         this.Draw(position, label, context);
     }
 
+    public toString(): string
+    {
+        let result: string = "";
+        for (let i = 0; i < this.RowNumber; i++)
+        {
+            result += '[';
+            for (let j = 0; j < this.ColumnNumber; j++)
+            {
+                result += this.numbers[i][j] + ((j +1 < this.ColumnNumber) ? ';' : '');
+            }
+            result += ']'
+        }
+
+        return result;
+    }
+
     //#region from string
 
     /** Returns Matrix created from string fromated like "[1,2,3][4,5,6][7,8,9]" or null if string is not a valid matrix */
@@ -199,8 +228,8 @@ export class Matrix
             
             offset.value++;
             
-            if (currentChar == ',' || currentChar == ' ') break;
-            else value += currentChar;
+            if (currentChar == ' ' || currentChar == ';') break;
+            else value += currentChar == ',' ? '.' : currentChar;
         }
 
         return Number(value);
