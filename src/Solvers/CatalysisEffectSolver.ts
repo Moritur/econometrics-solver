@@ -120,7 +120,7 @@ export class CatalysisEffectSolver extends Solver
                 for (let col = row + 1; col < R.ColumnNumber; col++) 
                 {
                     const RijValue: number = Rij[row][col];
-                    const RijText: string = `R${Utils.NumberToSubscript(col + 1)} ${Utils.NumberToSubscript(row + 1)}`;
+                    const RijText: string = `R${Utils.NumberToSubscript(row + 1)} ${Utils.NumberToSubscript(col + 1)}`;
                     const drawY: number = topMargin + (iterations * lineMargin);
                 
                     CanvasHelper.DrawText(`${RijText}= ${RijValue}`, new Vector2(RijDrawX, drawY), 18, "left");
@@ -239,30 +239,32 @@ export class CatalysisEffectSolver extends Solver
         const Rij_arr: MatrixRows = new MatrixRows(R_reg.RowNumber);
         const Ri_Rj: MatrixRows = new MatrixRows(R_reg.RowNumber);
 
-        for (let row = 0; row < R_reg.RowNumber; row++)
+        for (let i = 0; i < R_reg.RowNumber; i++)
         {
-            Rij_arr[row] = new Array<number>(R_reg.ColumnNumber);
-            Ri_Rj[row] = new Array<number>(R_reg.ColumnNumber);
-            for (let col = row + 1; col < R_reg.ColumnNumber; col++)
+            Rij_arr[i] = new Array<number>(R_reg.ColumnNumber);
+            Ri_Rj[i] = new Array<number>(R_reg.ColumnNumber);
+            for (let j = i + 1; j < R_reg.ColumnNumber; j++)
             {
-                const Rij: number = R_reg.numbers[col][row];
-                const Ri = R0_reg.numbers[0][Utils.GetElementIndex(xOrderInR0_reg, row)];
-                const Rj = R0_reg.numbers[0][Utils.GetElementIndex(xOrderInR0_reg, col)];
-                Rij_arr[row][col] = Rij;
-                Ri_Rj[row][col] = null;
+                const i_reg = Utils.GetElementIndex(xOrderInR0_reg, i);
+                const j_reg = Utils.GetElementIndex(xOrderInR0_reg, j);
+                const Rij: number = R_reg.numbers[i_reg][j_reg];
+                const Ri = R0_reg.numbers[0][i_reg];
+                const Rj = R0_reg.numbers[0][j_reg];
+                Rij_arr[i][j] = Rij;
+                Ri_Rj[i][j] = null;
 
                 if (Rij < 0)
                 {
-                    catalysisPairs.push(new CatalysisPair(row, col, (Ri > Rj)));
+                    catalysisPairs.push(new CatalysisPair(i, j, (Ri > Rj)));
                 }
                 else
                 {
                     let testValue: number;
 
                     testValue = (Ri < Rj) ? Ri / Rj : Rj / Ri;
-                    Ri_Rj[row][col] = testValue;
+                    Ri_Rj[i][j] = testValue;
                     
-                    if (Rij > testValue) catalysisPairs.push(new CatalysisPair(row, col, (Ri < Rj)));
+                    if (Rij > testValue) catalysisPairs.push(new CatalysisPair(i, j, (Ri < Rj)));
                 }
             }
         }
