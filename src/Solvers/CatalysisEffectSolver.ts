@@ -99,7 +99,7 @@ export class CatalysisEffectSolver extends Solver
         //#endregion
         //#region display results
 
-        R.Draw(new Vector2(10, 30), "R");
+        R.Draw(Solver.drawStartPos, "R");
         // transpose R0 to draw it vertically, because that's how Dr Zając writes that
         const R0T = R0.Transpose();
         R0T.DrawNextTo(R, Side.right, "R0");

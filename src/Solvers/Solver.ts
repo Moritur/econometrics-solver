@@ -1,4 +1,5 @@
 import { CanvasHelper } from "../CanvasHelper";
+import { Vector2 } from "../Vector2";
 
 /** Base class for classes solving econometric problems */
 export abstract class Solver
@@ -6,7 +7,10 @@ export abstract class Solver
     //#region error messages
     protected static readonly notMatrixError: string = "podana wartość nie jest macierzą";
     protected static readonly matrixNotSquareError: string = "podana macierz nie jest kwadratowa (tyle wierszy co kolumn)";
+    protected static readonly notNumberError: string = "podana wartość nie jest liczbą";
     //#endregion
+
+    protected static readonly drawStartPos: Vector2 = new Vector2(10, 30);
 
     protected readonly inputs: Map<string, HTMLInputElement> = new Map<string, HTMLInputElement>();
     protected readonly errorLabels: Map<string, HTMLLabelElement> = new Map<string, HTMLLabelElement>();

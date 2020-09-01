@@ -63,4 +63,16 @@ export namespace Utils
         if (value > 9 || value < 0 || !Number.isInteger(value)) throw new Error("Value must be integral number from range <0;9>");
         else return ['₀', '₁', '₂', '₃', '₄', '₅', '₆', '₇', '₈', '₉'][value]
     }
+
+    export function CopyArray<T>(array: readonly T[]): T[];
+
+    /** Creates shallow copy of an array */
+    export function CopyArray<T>(array: T[]): T[]
+    {
+        const copy: T[] = new Array<T>(array.length);
+
+        for (let i = 0; i < array.length; i++) copy[i] = array[i];
+
+        return copy;
+    }
 }
