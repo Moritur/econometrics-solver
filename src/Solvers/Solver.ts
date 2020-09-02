@@ -1,5 +1,6 @@
 import { CanvasHelper } from "../CanvasHelper";
 import { Vector2 } from "../Vector2";
+import { Matrix } from "../Matrix";
 
 /** Base class for classes solving econometric problems */
 export abstract class Solver
@@ -8,6 +9,7 @@ export abstract class Solver
     protected static readonly notMatrixError: string = "podana wartość nie jest macierzą";
     protected static readonly matrixNotSquareError: string = "podana macierz nie jest kwadratowa (tyle wierszy co kolumn)";
     protected static readonly notNumberError: string = "podana wartość nie jest liczbą";
+    protected static readonly notVectorError: string = "podana macierz nie jest wektorem (jeden wiersz albo jedna kolumna)";
     //#endregion
 
     protected static readonly drawStartPos: Vector2 = new Vector2(10, 30);
@@ -50,5 +52,16 @@ export abstract class Solver
     protected GetInputValue(inputId: string): string
     {
         return this.inputs.get(inputId).value;
+    }
+
+    /** Draws vertical line to separate two parts of problem's solution.
+     * Returns Vector2 representing position where drawing of the next part should start
+     * @param rightmostMatrix Rightmost matrix from finished part of solution. Line will be drawn next to it.
+     */
+    protected DrawSeparatingVerticalLine(rightmostMatrix: Matrix): Vector2
+    {
+        const bLineX: number = rightmostMatrix.LastDrawPosition.x + rightmostMatrix.PixelWidth + Matrix.matrixPixelMargin;
+        CanvasHelper.DrawLine(new Vector2(bLineX, 0), new Vector2(bLineX, CanvasHelper.sharedContext.canvas.height), 5);
+        return new Vector2(bLineX + Matrix.matrixPixelMargin, Solver.drawStartPos.y);
     }
 }

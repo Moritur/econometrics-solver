@@ -72,7 +72,7 @@ export class CatalysisEffectSolver extends Solver
         else if (R0.RowNumber > 1)
         {
             if (R0.ColumnNumber == 1) R0 = R0.Transpose();
-            else { this.DisplayInputError("R0", "podana macierz nie jest wektorem (jeden wiersz albo jedna kolumna)"); return; }
+            else { this.DisplayInputError("R0", Solver.notVectorError); return; }
         }
         //#endregion
 

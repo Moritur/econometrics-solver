@@ -11,11 +11,11 @@ export enum Side { above, under, left, right }
 export class Matrix
 {
     //#region config
-    private static readonly cellPixelSize: number = 40;
-    private static readonly labelPixelMargin: number = 6;
-    private static readonly matrixPixelMargin: number = 12;
-    private static readonly cellContentFont: string = "11px sans-serif";
-    private static readonly labelFont: string = "bold 14px sans-serif";
+    public static readonly cellPixelSize: number = 40;
+    public static readonly labelPixelMargin: number = 6;
+    public static readonly matrixPixelMargin: number = 12;
+    public static readonly cellContentFont: string = "11px sans-serif";
+    public static readonly labelFont: string = "bold 14px sans-serif";
     //#endregion
 
     /** Numbers contained in matrix. Access them like numbers[row][column] */
