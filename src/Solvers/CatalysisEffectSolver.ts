@@ -75,13 +75,14 @@ export class CatalysisEffectSolver extends Solver
             else { this.DisplayInputError("R0", Solver.notVectorError); return; }
         }
         //#endregion
-
+        //#region R & R0
         if (R.ColumnNumber != R0.ColumnNumber)
         {
             this.DisplayInputError("R", "R ma inną ilość kolumn niż R0");
             this.DisplayInputError("R0", "R0 ma inną ilość kolumn niż R");
-            return
+            return;
         }
+        //#endregion
         //#endregion
         //#region  calculate
 

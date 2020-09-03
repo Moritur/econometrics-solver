@@ -4,11 +4,16 @@ import { Utils } from "../Utils";
 import { CanvasHelper } from "../CanvasHelper";
 import { Vector2 } from "../Vector2";
 
+var { jStat } = require('jstat')
+
 export class MNKSolver extends Solver
 {
     public constructor()
     {
-        super(["alpha", "matrixYXX"]);
+        super(["alpha", "matrixYXX", "probability"]);
+
+        // console.log(jStat.studentt.inv(0.995, 27));
+        // console.log(jStat.centralF.inv(0.95, 5, 1));
     }
 
     protected HandleInput(inputEvent: InputEvent): void
@@ -18,6 +23,7 @@ export class MNKSolver extends Solver
 
         let alpha: Matrix = Matrix.FromString(this.GetInputValue("alpha"));
         const YXX: Matrix = Matrix.FromString(this.GetInputValue("matrixYXX"));
+        let probabilityPercent: number = this.GetInputValueAsNumber("probability");
 
         //#region validate input
 
@@ -52,6 +58,13 @@ export class MNKSolver extends Solver
             return;
         }
         //#endregion
+        //#region probability
+        if (probabilityPercent == null || isNaN(probabilityPercent))
+        {
+            this.DisplayInputError("probability", Solver.notNumberError);
+            return;
+        }
+        //#endregion
 
         //#endregion
         //#region calculate
@@ -75,6 +88,10 @@ export class MNKSolver extends Solver
         const S_forA: Matrix = this.CalcuakteSForA(S_sqrForA);
         const V_forA: Matrix = this.CalculateVForA(S_forA, a);
 
+        const probability: number = probabilityPercent / 100;
+        const t_forA: Matrix = this.CalculateTForA(S_forA, a);
+        const t_stud: number = jStat.studentt.inv(1 - (probability / 2), n - k - 1);
+
         //#endregion
         //#region display results
 
@@ -97,10 +114,6 @@ export class MNKSolver extends Solver
 
         //#region b)
 
-        // const bLineX: number = XtX.LastDrawPosition.x + XtX.PixelWidth + Matrix.matrixPixelMargin;
-        // CanvasHelper.DrawLine(new Vector2(bLineX, 0), new Vector2(bLineX, CanvasHelper.sharedContext.canvas.height), 5);
-        // const bDrawStartPos: Vector2 = new Vector2(bLineX + Matrix.matrixPixelMargin, Solver.drawStartPos.y);
-
         const bDrawStartPos: Vector2 = this.DrawSeparatingVerticalLine(XtX);
 
         S_sqrForA.Draw(bDrawStartPos, "S²(a)");
@@ -108,6 +121,11 @@ export class MNKSolver extends Solver
         V_forA.DrawNextTo(S_forA, Side.under, "V(a) (śr wzg bł %)")
 
         const bbDrawStartPos: Vector2 = this.DrawSeparatingVerticalLine(S_sqrForA)
+
+        S_sqrForA.Draw(bbDrawStartPos, "S²(a)");
+        S_forA.DrawNextTo(S_sqrForA, Side.under, "S(a) (śr bł)");
+        t_forA.DrawNextTo(S_forA, Side.under, "t(a)");
+        CanvasHelper.DrawText(`t*=${Number(t_stud.toFixed(3))}`, Vector2.Add(t_forA.LastDrawPosition, new Vector2(0, (Matrix.cellPixelSize * 2) )), 16, "left", "sans-serif", "black", "bold");
 
         //#endregion
         //#endregion
@@ -194,6 +212,19 @@ export class MNKSolver extends Solver
         for (let i = 0; i < S_forA.ColumnNumber; i++)
         {
             rows[0][i] = Math.abs(S_forA.numbers[0][i] / a.numbers[i][0]) * 100;
+        }
+
+        return new Matrix(rows);
+    }
+
+    private CalculateTForA(S_forA: Matrix, a: Matrix): Matrix
+    {
+        const rows: MatrixRows = new MatrixRows(0);
+        rows[0] = new Array<number>(S_forA.ColumnNumber);
+
+        for (let i = 0; i < S_forA.ColumnNumber; i++)
+        {
+            rows[0][i] = Math.abs(a.numbers[i][0]) / S_forA.numbers[0][i];
         }
 
         return new Matrix(rows);

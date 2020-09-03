@@ -54,6 +54,19 @@ export abstract class Solver
         return this.inputs.get(inputId).value;
     }
 
+    protected GetInputValueAsNumber(inputId: string): number
+    {
+        const stringValue: string = this.GetInputValue(inputId);
+        
+        if (stringValue == null || stringValue == "") return NaN;
+
+        let value: number = Number(stringValue);
+
+        if (isNaN(value)) value = Number(stringValue.replace(',', '.'));
+
+        return value;
+    }
+
     /** Draws vertical line to separate two parts of problem's solution.
      * Returns Vector2 representing position where drawing of the next part should start
      * @param rightmostMatrix Rightmost matrix from finished part of solution. Line will be drawn next to it.
