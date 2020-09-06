@@ -6,7 +6,7 @@ module.exports = {
   entry: "./src/index.ts",
   output: {
     filename: "index.js",
-    path: path.resolve(__dirname, "dist")
+    path: path.resolve(__dirname, "docs")
   },
   resolve: {
     extensions: [".tsx", ".ts", ".js", ".json"]
@@ -18,6 +18,10 @@ module.exports = {
         from: "src/*.html",
         to: "",
         flatten: true
+      },
+      {
+        from: "src/SolverPages",
+        to: "SolverPages"
       }
     ])
   ],
