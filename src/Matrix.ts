@@ -410,5 +410,22 @@ export class Matrix
         }
     }
 
+    /** Calcualtes and returns average value from all elements of this matrix */
+    public get Average(): number
+    {
+        const elementNumber: number = this.ColumnNumber * this.RowNumber;
+        let elementSum: number = 0;
+
+        for (let row = 0; row < this.RowNumber; row++)
+        {
+            for (let col = 0; col < this.ColumnNumber; col++)
+            {
+                elementSum += this.numbers[row][col];
+            }
+        }
+
+        return elementSum / elementNumber;
+    }
+
     //#endregion
 }

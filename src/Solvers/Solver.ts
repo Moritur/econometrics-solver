@@ -1,6 +1,7 @@
 import { CanvasHelper } from "../CanvasHelper";
 import { Vector2 } from "../Vector2";
 import { Matrix } from "../Matrix";
+import { Utils } from "../Utils";
 
 /** Base class for classes solving econometric problems */
 export abstract class Solver
@@ -13,6 +14,13 @@ export abstract class Solver
     //#endregion
 
     protected static readonly drawStartPos: Vector2 = new Vector2(10, 30);
+    protected static readonly separatingLineThickness: number = 5;
+    protected static readonly lineMargin: number = 25;
+
+
+    /** Number of decimal places to which all displayed numbers should be rounde */
+    protected static readonly rounding: number = 3;
+    
 
     protected readonly inputs: Map<string, HTMLInputElement> = new Map<string, HTMLInputElement>();
     protected readonly errorLabels: Map<string, HTMLLabelElement> = new Map<string, HTMLLabelElement>();
@@ -73,8 +81,14 @@ export abstract class Solver
      */
     protected DrawSeparatingVerticalLine(rightmostMatrix: Matrix): Vector2
     {
-        const bLineX: number = rightmostMatrix.LastDrawPosition.x + rightmostMatrix.PixelWidth + Matrix.matrixPixelMargin;
-        CanvasHelper.DrawLine(new Vector2(bLineX, 0), new Vector2(bLineX, CanvasHelper.sharedContext.canvas.height), 5);
-        return new Vector2(bLineX + Matrix.matrixPixelMargin, Solver.drawStartPos.y);
+        const lineX: number = rightmostMatrix.LastDrawPosition.x + rightmostMatrix.PixelWidth + Matrix.matrixPixelMargin;
+        CanvasHelper.DrawLine(new Vector2(lineX, 0), new Vector2(lineX, CanvasHelper.sharedContext.canvas.height), Solver.separatingLineThickness);
+        return new Vector2(lineX + Matrix.matrixPixelMargin, Solver.drawStartPos.y);
+    }
+
+    /** Rounds number to default number of decimal places */
+    protected Round(value: number): number
+    {
+        return Utils.RoundNumber(value, Solver.rounding);
     }
 }

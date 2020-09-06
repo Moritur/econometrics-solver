@@ -37,7 +37,7 @@ export class CanvasHelper
         const originalTextAlign = context.textAlign;
 
         context.fillStyle = color;
-        context.font = mod === "" ? "" : mod + ' ' + size.toString() + "px " + font;
+        context.font = (mod === "" ? "" : mod + ' ') + size.toString() + "px " + font;
         context.textAlign = textAlign;
         context.fillText(text, position.x, position.y);
 

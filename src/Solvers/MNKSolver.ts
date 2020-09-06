@@ -81,7 +81,8 @@ export class MNKSolver extends Solver
         const eTe: Matrix = e.Transpose().MultiplyMatrix(e);
         const n: number = X.RowNumber;
         const k: number = X.ColumnNumber - 1;
-        const S_sqr: number = eTe.numbers[0][0] / (n - (k + 1));
+        const df = n - (k + 1);
+        const S_sqr: number = eTe.numbers[0][0] / df;
         const D_sqr: Matrix = XtXinv.MultiplyScalar(S_sqr);
 
         const S_sqrForA: Matrix = this.CalculateSsqrForA(D_sqr);
@@ -90,7 +91,14 @@ export class MNKSolver extends Solver
 
         const probability: number = probabilityPercent / 100;
         const t_forA: Matrix = this.CalculateTForA(S_forA, a);
-        const t_stud: number = jStat.studentt.inv(1 - (probability / 2), n - k - 1);
+        const t_stud: number = jStat.studentt.inv(1 - (probability / 2), df);
+
+        const Yt: Matrix = Y.Transpose();
+        const YtY: Matrix = Yt.MultiplyMatrix(Y);
+        const y_avg: number = Y.Average;
+        const R_sqr: number = this.CalculateR_sqr(eTe, YtY, y_avg, n);
+        const F: number = this.CalculateF(R_sqr, n, k);
+        const F_dist: number = jStat.centralF.inv(1 - probability, k, df);
 
         //#endregion
         //#region display results
@@ -107,26 +115,86 @@ export class MNKSolver extends Solver
         XtXinv.DrawNextTo(XtY, Side.right, "(XᵀX)⁻¹")
         a.DrawNextTo(XtXinv, Side.right, "a");
         eTe.DrawNextTo(a, Side.right, "eᵀe");
-        CanvasHelper.DrawText(`S²=${S_sqr}`, Vector2.Add(eTe.LastDrawPosition, new Vector2(Matrix.cellPixelSize + Matrix.matrixPixelMargin, Matrix.labelPixelMargin)), 16, "left", "sans-serif", "black", "bold");
+        CanvasHelper.DrawText(`S²=${Number(S_sqr.toFixed(3))}`, Vector2.Add(eTe.LastDrawPosition, new Vector2(Matrix.cellPixelSize + Matrix.matrixPixelMargin, Matrix.labelPixelMargin)), 16, "left", "sans-serif", "black", "bold");
         D_sqr.DrawNextTo(XtY, Side.under, "D²(a)");
 
         //#endregion
 
         //#region b)
-
+        //#region b
         const bDrawStartPos: Vector2 = this.DrawSeparatingVerticalLine(XtX);
 
         S_sqrForA.Draw(bDrawStartPos, "S²(a)");
         S_forA.DrawNextTo(S_sqrForA, Side.under, "S(a) (śr bł)");
         V_forA.DrawNextTo(S_forA, Side.under, "V(a) (śr wzg bł %)")
 
-        const bbDrawStartPos: Vector2 = this.DrawSeparatingVerticalLine(S_sqrForA)
+        {
+            let drawPos: Vector2 = Vector2.Add(V_forA.LastDrawPosition, new Vector2(0, V_forA.PixelHeight + Matrix.matrixPixelMargin));
+            for (let i = 0; i < V_forA.ColumnNumber; i++)
+            {
+                if (!isFinite(V_forA.numbers[0][i]) || isNaN(V_forA.numbers[0][i]))
+                {
+                    CanvasHelper.DrawText(`nie ma V(a) dla a${Utils.NumberToSubscript(i)}`, drawPos, 16, "left");
+                    drawPos = Vector2.Add(drawPos, new Vector2(0, Solver.lineMargin));
+                }
+            }
+        }
 
+        //#endregion
+        //#region bb
+
+        const bbDrawStartPos: Vector2 = this.DrawSeparatingVerticalLine(S_sqrForA)
         S_sqrForA.Draw(bbDrawStartPos, "S²(a)");
         S_forA.DrawNextTo(S_sqrForA, Side.under, "S(a) (śr bł)");
         t_forA.DrawNextTo(S_forA, Side.under, "t(a)");
-        CanvasHelper.DrawText(`t*=${Number(t_stud.toFixed(3))}`, Vector2.Add(t_forA.LastDrawPosition, new Vector2(0, (Matrix.cellPixelSize * 2) )), 16, "left", "sans-serif", "black", "bold");
+        const t_studDrawPos: Vector2 = Vector2.Add(t_forA.LastDrawPosition, new Vector2(0, (Matrix.cellPixelSize * 2)));
+        CanvasHelper.DrawText(`t*=${this.Round(t_stud)}`, t_studDrawPos, 16, "left", "sans-serif", "black", "bold");
+        
+        let bbAnswerDraw: Vector2 = Vector2.Add(S_sqrForA.LastDrawPosition, new Vector2(S_sqrForA.PixelWidth + Matrix.matrixPixelMargin, 0));
 
+        CanvasHelper.DrawText("H0: zmienna Xi jest nieistotna", bbAnswerDraw, 18, "left");
+        bbAnswerDraw = Vector2.Add(bbAnswerDraw, new Vector2(0, Solver.lineMargin));;
+        CanvasHelper.DrawText("H1: zmienna Xi ma statystycznie istotny wpływ na zmienną objaśnianą", bbAnswerDraw, 18, "left");
+
+        for (let i = 0; i < t_forA.ColumnNumber; i++)
+        {
+            const acceptH0 = t_forA.numbers[0][i] < t_stud;
+            const text: string = `t${Utils.NumberToSubscript(i)} ${acceptH0 ? '<' : '>'} t* `
+                + `Z prawdopodobieństwem ${probabilityPercent}% ${acceptH0 ? "brak podstaw by odrzucić H0" : "należy odrzucić H0 na rzecz H1"}`;
+            
+            bbAnswerDraw = Vector2.Add(bbAnswerDraw, new Vector2(0, Solver.lineMargin));
+            CanvasHelper.DrawText(text, bbAnswerDraw, 18, "left");
+        }
+
+        //#endregion
+        //#region bbb
+
+        const bbbLineY = t_studDrawPos.y + 25;
+        const bbbLineStart = new Vector2(bbDrawStartPos.x - Matrix.matrixPixelMargin, bbbLineY);
+        CanvasHelper.DrawLine(bbbLineStart, new Vector2(CanvasHelper.sharedContext.canvas.width, bbbLineY), Solver.separatingLineThickness);
+
+        let bbbAnswerDraw: Vector2 = Vector2.Add(bbbLineStart, Solver.drawStartPos);
+        CanvasHelper.DrawText("H0: nie ma takiej zmiennej Xi, któa ma statystycznie istotny wpływ na Y", bbbAnswerDraw, 18, "left");
+        bbbAnswerDraw = Vector2.Add(bbbAnswerDraw, new Vector2(0, Solver.lineMargin));
+        CanvasHelper.DrawText("H1: jest taka zmienna Xi, któa ma statystycznie istotny wpływ na Y", bbbAnswerDraw, 18, "left");
+        bbbAnswerDraw = Vector2.Add(bbbAnswerDraw, new Vector2(0, Solver.lineMargin));
+        CanvasHelper.DrawText(`ȳ=${this.Round(y_avg)}`, bbbAnswerDraw, 18, "left");
+        bbbAnswerDraw = Vector2.Add(bbbAnswerDraw, new Vector2(0, Solver.lineMargin));
+        CanvasHelper.DrawText(`R²=${this.Round(R_sqr)}`, bbbAnswerDraw, 18, "left");
+        bbbAnswerDraw = Vector2.Add(bbbAnswerDraw, new Vector2(0, Solver.lineMargin));
+        CanvasHelper.DrawText(`F=${this.Round(F)}`, bbbAnswerDraw, 18, "left");
+        bbbAnswerDraw = Vector2.Add(bbbAnswerDraw, new Vector2(0, Solver.lineMargin));
+        CanvasHelper.DrawText(`F*=${this.Round(F_dist)}`, bbbAnswerDraw, 18, "left");
+        
+        bbbAnswerDraw = Vector2.Add(bbbAnswerDraw, new Vector2(0, Solver.lineMargin));
+        Yt.Draw(bbbAnswerDraw, "Yᵀ");
+        YtY.DrawNextTo(Yt, Side.right, "YᵀY")
+        bbbAnswerDraw = Vector2.Add(Yt.LastDrawPosition, new Vector2(0, YtY.PixelHeight + (Matrix.matrixPixelMargin * 2)));
+        const acceptH0: boolean = F < F_dist;
+        const bbbAnswerText: string = `Z prawdopodobieństwem ${probabilityPercent}% ${acceptH0 ? "brak podstaw by odrzucić H0" : "należy odrzucić H0 na rzecz H1"}`;
+        CanvasHelper.DrawText(bbbAnswerText, bbbAnswerDraw, 18, "left");
+
+        //#endregion
         //#endregion
         //#endregion
     }
@@ -228,5 +296,15 @@ export class MNKSolver extends Solver
         }
 
         return new Matrix(rows);
+    }
+
+    private CalculateR_sqr(eTe: Matrix, YtY: Matrix, y_avg: number, n: number): number
+    {
+        return 1 - (eTe.numbers[0][0] / (YtY.numbers[0][0] - (n * (y_avg * y_avg))));
+    }
+
+    private CalculateF(R_sqr: number, n: number, k: number): number
+    {
+        return ((R_sqr / (1 - R_sqr)) * ((n - k - 1) / k));
     }
 }

@@ -75,4 +75,10 @@ export namespace Utils
 
         return copy;
     }
+
+    /** Returns number rounded to decimalPlaces number of decimal places */
+    export function RoundNumber(value: number, decimalPlaces: number): number
+    {
+        return Number(value.toFixed(decimalPlaces));
+    }
 }
