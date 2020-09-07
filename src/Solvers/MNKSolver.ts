@@ -75,6 +75,11 @@ export class MNKSolver extends Solver
         const XtX: Matrix = Xt.MultiplyMatrix(X);
         const XtY: Matrix = Xt.MultiplyMatrix(Y);
         const XtXinv: Matrix = XtX.Invert();
+        if (XtXinv == null)
+        {
+            this.DisplayInputError("matrixYXX", "Macierzy XᵀX nie można odwrócić, pewnie błąd w przepisywaniu danych");
+            return;
+        }
         const a: Matrix = XtXinv.MultiplyMatrix(XtY);
         const y_hat: Matrix = this.CalculateY_hat(a, X);
         const e: Matrix = this.Calculate_e(Y, y_hat);
@@ -193,6 +198,19 @@ export class MNKSolver extends Solver
         const acceptH0: boolean = F < F_dist;
         const bbbAnswerText: string = `Z prawdopodobieństwem ${probabilityPercent}% ${acceptH0 ? "brak podstaw by odrzucić H0" : "należy odrzucić H0 na rzecz H1"}`;
         CanvasHelper.DrawText(bbbAnswerText, bbbAnswerDraw, 18, "left");
+
+        //#endregion
+        //#region bbbb
+
+        const bbbbLineY = bbbAnswerDraw.y + 25;
+        const bbbbLineStart = new Vector2(bbDrawStartPos.x - Matrix.matrixPixelMargin, bbbbLineY);
+        CanvasHelper.DrawLine(bbbbLineStart, new Vector2(CanvasHelper.sharedContext.canvas.width, bbbbLineY), Solver.separatingLineThickness);
+
+        let bbbbAnswerDraw: Vector2 = Vector2.Add(bbbbLineStart, Solver.drawStartPos);
+        CanvasHelper.DrawText("Wpółczynnik determinancji", bbbbAnswerDraw, 18, "left");
+        bbbbAnswerDraw = Vector2.Add(bbbbAnswerDraw, new Vector2(0, Solver.lineMargin));
+        const roundR_sqr = this.Round(R_sqr);
+        CanvasHelper.DrawText(`R²=${roundR_sqr}   ${roundR_sqr * 100}% zmienności y jest objaśniane przez model`, bbbbAnswerDraw, 18, "left");
 
         //#endregion
         //#endregion
