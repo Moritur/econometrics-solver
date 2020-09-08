@@ -97,6 +97,11 @@ export class CatalysisEffectSolver extends Solver
         const Rij: MatrixRows = tmpCatPar_out[1];
         const Ri_Rj: MatrixRows = tmpCatPar_out[2];
 
+        const combinations: MatrixRows = this.CalculateCombinations(R.RowNumber);
+        const H_sj: Matrix = this.CalculateH_sj(R, R0, combinations);
+        const H_s: Array<number> = this.CalculateH_s(H_sj);
+        const bestH: number = CatalysisEffectSolver.GetGreatestNumberIndex(H_s);
+
         //#endregion
         //#region display results
 
@@ -161,6 +166,28 @@ export class CatalysisEffectSolver extends Solver
             }
         }
 
+        const hellwigLineY = R_reg.LastDrawPosition.y + R_reg.PixelHeight + 25;
+        const hellwigStartPos: Vector2 = new Vector2(0, hellwigLineY);
+        CanvasHelper.DrawLine(hellwigStartPos, new Vector2(CanvasHelper.sharedContext.canvas.width, hellwigLineY), Solver.separatingLineThickness);
+
+        H_sj.Draw(Vector2.Add(hellwigStartPos, Solver.drawStartPos), "Hₛⱼ");
+
+        let hellwigAnswerDraw: Vector2 = Vector2.Add(hellwigStartPos, new Vector2(H_sj.PixelWidth + Matrix.matrixPixelMargin + 10, 0))
+        for (let i = 0; i < H_s.length; i++)
+        {
+            hellwigAnswerDraw = Vector2.Add(hellwigAnswerDraw, new Vector2(0, Solver.lineMargin));
+            CanvasHelper.DrawText(`H${Utils.NumberToSubscript(i+1)}=${this.Round(H_s[i])}`, hellwigAnswerDraw, 18, "left");
+        }
+        hellwigAnswerDraw = Vector2.Add(H_sj.LastDrawPosition, new Vector2(H_sj.PixelWidth + Matrix.matrixPixelMargin + 100, 0))
+
+        let hellwigAnswerText: string = "Najlepszym w sensie Hellwiga podzbiorem zmiennych objaśniających jest {";
+
+        for (let i = 0; i < H_sj.ColumnNumber - 1; i++)
+        {
+            hellwigAnswerText += ('X' + Utils.NumberToSubscript(combinations[bestH][i] + 1) + ((i + 1 < H_sj.ColumnNumber - 1) ? ", " : '}'));
+        }
+
+        CanvasHelper.DrawText(hellwigAnswerText, hellwigAnswerDraw, 18, "left");
         //#endregion
     }
 
@@ -272,6 +299,80 @@ export class CatalysisEffectSolver extends Solver
 
         return [catalysisPairs, Rij_arr, Ri_Rj];
     }
+
+    private CalculateH_sj(R: Matrix, R0: Matrix, combinations: MatrixRows): Matrix
+    {
+        const rows: MatrixRows = new MatrixRows(R.RowNumber);
+        for (let i = 0; i < rows.length; i++) rows[i] = new Array<number>(R.ColumnNumber - 1);
+
+        for (let col = 0; col < R.ColumnNumber; col++)
+        {
+            for (let row = 0; row < R.RowNumber; row++)
+            {
+                const j: number = row;
+                if (!Utils.IsElementInArray(combinations[col], row))
+                {
+                    rows[row][col] = 0;
+                }
+                else
+                {
+                    let Rij_sum = 0;
+                    for (let i = 0; i < R.ColumnNumber; i++)
+                    {
+                        if (Utils.IsElementInArray(combinations[col], i))
+                        {
+                            Rij_sum += Math.abs(R.numbers[j][i]);
+                        }
+                    }
+
+                    rows[row][col] = (R0.numbers[0][j] * R0.numbers[0][j]) / Rij_sum;
+                }
+            }
+        }
+
+
+        return new Matrix(rows);
+    }
+
+    private CalculateCombinations(numberOfXs: number): MatrixRows
+    {
+        const combinations: MatrixRows = new MatrixRows(numberOfXs);
+
+        const first: Array<number> = new Array<number>(numberOfXs - 1);
+        for (let i = 0; i < numberOfXs - 1; i++)
+        {
+            first[i] = i;
+        }
+        combinations[0] = first;
+
+        for (let i = 1; i < numberOfXs; i++)
+        {
+            const next: Array<number> = Utils.CopyArray(combinations[i - 1]);
+            next[next.length - i] += 1;
+            combinations[i] = next;
+        }
+
+        return combinations;
+    }
+
+    private CalculateH_s(H_sj: Matrix): Array<number>
+    {
+        const result: Array<number> = new Array<number>(H_sj.ColumnNumber);
+
+        for (let col = 0; col < H_sj.ColumnNumber; col++)
+        {
+            let H: number = 0;
+            for (let row = 0; row < H_sj.RowNumber; row++)
+            {
+                H += H_sj.numbers[row][col];
+            }
+
+            result[col] = H;
+        }
+
+        return result;
+    }
+
 }
 
 class CatalysisPair

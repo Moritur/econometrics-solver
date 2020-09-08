@@ -158,7 +158,7 @@ export class MNKSolver extends Solver
         let bbAnswerDraw: Vector2 = Vector2.Add(S_sqrForA.LastDrawPosition, new Vector2(S_sqrForA.PixelWidth + Matrix.matrixPixelMargin, 0));
 
         CanvasHelper.DrawText("H0: zmienna Xi jest nieistotna", bbAnswerDraw, 18, "left");
-        bbAnswerDraw = Vector2.Add(bbAnswerDraw, new Vector2(0, Solver.lineMargin));;
+        bbAnswerDraw = Vector2.Add(bbAnswerDraw, new Vector2(0, Solver.lineMargin));
         CanvasHelper.DrawText("H1: zmienna Xi ma statystycznie istotny wpływ na zmienną objaśnianą", bbAnswerDraw, 18, "left");
 
         for (let i = 0; i < t_forA.ColumnNumber; i++)
