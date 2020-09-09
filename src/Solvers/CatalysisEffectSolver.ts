@@ -174,12 +174,25 @@ export class CatalysisEffectSolver extends Solver
         H_sj.Draw(Vector2.Add(hellwigStartPos, Solver.drawStartPos), "Hₛⱼ");
 
         let hellwigAnswerDraw: Vector2 = Vector2.Add(hellwigStartPos, new Vector2(H_sj.PixelWidth + Matrix.matrixPixelMargin + 10, 0))
+
+        hellwigAnswerDraw = Vector2.Add(hellwigAnswerDraw, new Vector2(0, Solver.lineMargin));
+        CanvasHelper.DrawText("Integralna pojemność informacyjna podzbiorów:", hellwigAnswerDraw, 18, "left");
+
         for (let i = 0; i < H_s.length; i++)
         {
             hellwigAnswerDraw = Vector2.Add(hellwigAnswerDraw, new Vector2(0, Solver.lineMargin));
-            CanvasHelper.DrawText(`H${Utils.NumberToSubscript(i+1)}=${this.Round(H_s[i])}`, hellwigAnswerDraw, 18, "left");
+            const Hi = this.Round(H_s[i]);
+            const Ci: Array<number> = combinations[i];
+            const iSubscript: string = Utils.NumberToSubscript(i + 1);
+            let CiText: string = "{";
+
+            for (let j = 0; j < Ci.length; j++)
+            {
+                CiText += 'X' + Utils.NumberToSubscript(Ci[j] + 1) + (j + 1 < Ci.length ? ',' : '}');
+            }
+
+            CanvasHelper.DrawText(`C${iSubscript}=${CiText} H${iSubscript}=${Hi}`, hellwigAnswerDraw, 18, "left");
         }
-        hellwigAnswerDraw = Vector2.Add(H_sj.LastDrawPosition, new Vector2(H_sj.PixelWidth + Matrix.matrixPixelMargin + 100, 0))
 
         let hellwigAnswerText: string = "Najlepszym w sensie Hellwiga podzbiorem zmiennych objaśniających jest {";
 
@@ -188,6 +201,7 @@ export class CatalysisEffectSolver extends Solver
             hellwigAnswerText += ('X' + Utils.NumberToSubscript(combinations[bestH][i] + 1) + ((i + 1 < H_sj.ColumnNumber - 1) ? ", " : '}'));
         }
 
+        hellwigAnswerDraw = Vector2.Add(hellwigAnswerDraw, new Vector2(0, Solver.lineMargin * 2));
         CanvasHelper.DrawText(hellwigAnswerText, hellwigAnswerDraw, 18, "left");
         //#endregion
         //#endregion

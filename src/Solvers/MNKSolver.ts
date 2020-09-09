@@ -120,7 +120,8 @@ export class MNKSolver extends Solver
         XtXinv.DrawNextTo(XtY, Side.right, "(XᵀX)⁻¹")
         a.DrawNextTo(XtXinv, Side.right, "a");
         eTe.DrawNextTo(a, Side.right, "eᵀe");
-        CanvasHelper.DrawText(`S²=${Number(S_sqr.toFixed(3))}`, Vector2.Add(eTe.LastDrawPosition, new Vector2(Matrix.cellPixelSize + Matrix.matrixPixelMargin, Matrix.labelPixelMargin)), 16, "left", "sans-serif", "black", "bold");
+        const S_sqrDrawPos = Vector2.Add(eTe.LastDrawPosition, new Vector2(Matrix.cellPixelSize + Matrix.matrixPixelMargin, Matrix.labelPixelMargin));
+        CanvasHelper.DrawText(`S²=(eᵀe)/(n-k-1)=${this.Round(S_sqr)}`, S_sqrDrawPos, 16, "left", "sans-serif", "black", "bold");
         D_sqr.DrawNextTo(XtY, Side.under, "D²(a)");
 
         //#endregion
@@ -185,9 +186,9 @@ export class MNKSolver extends Solver
         bbbAnswerDraw = Vector2.Add(bbbAnswerDraw, new Vector2(0, Solver.lineMargin));
         CanvasHelper.DrawText(`ȳ=${this.Round(y_avg)}`, bbbAnswerDraw, 18, "left");
         bbbAnswerDraw = Vector2.Add(bbbAnswerDraw, new Vector2(0, Solver.lineMargin));
-        CanvasHelper.DrawText(`R²=${this.Round(R_sqr)}`, bbbAnswerDraw, 18, "left");
+        CanvasHelper.DrawText(`R²=1-((eᵀe/yᵀy)-(n*ȳ²))=${this.Round(R_sqr)}`, bbbAnswerDraw, 18, "left");
         bbbAnswerDraw = Vector2.Add(bbbAnswerDraw, new Vector2(0, Solver.lineMargin));
-        CanvasHelper.DrawText(`F=${this.Round(F)}`, bbbAnswerDraw, 18, "left");
+        CanvasHelper.DrawText(`F=(R²/(1-R²))*((n-k-1)/k)=${this.Round(F)}`, bbbAnswerDraw, 18, "left");
         bbbAnswerDraw = Vector2.Add(bbbAnswerDraw, new Vector2(0, Solver.lineMargin));
         CanvasHelper.DrawText(`F*=${this.Round(F_dist)}`, bbbAnswerDraw, 18, "left");
         
@@ -210,7 +211,7 @@ export class MNKSolver extends Solver
         CanvasHelper.DrawText("Wpółczynnik determinancji", bbbbAnswerDraw, 18, "left");
         bbbbAnswerDraw = Vector2.Add(bbbbAnswerDraw, new Vector2(0, Solver.lineMargin));
         const roundR_sqr = this.Round(R_sqr);
-        CanvasHelper.DrawText(`R²=${roundR_sqr}   ${roundR_sqr * 100}% zmienności y jest objaśniane przez model`, bbbbAnswerDraw, 18, "left");
+        CanvasHelper.DrawText(`R²=1-((eᵀe/yᵀy)-(n*ȳ²))=${roundR_sqr}   ${roundR_sqr * 100}% zmienności y jest objaśniane przez model`, bbbbAnswerDraw, 18, "left");
 
         //#endregion
         //#region c
