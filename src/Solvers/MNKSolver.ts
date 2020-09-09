@@ -213,6 +213,33 @@ export class MNKSolver extends Solver
         CanvasHelper.DrawText(`R²=${roundR_sqr}   ${roundR_sqr * 100}% zmienności y jest objaśniane przez model`, bbbbAnswerDraw, 18, "left");
 
         //#endregion
+        //#region c
+
+        const cLineY = bbbbAnswerDraw.y + 25;
+        const cLineStart = new Vector2(bbbbLineStart.x, cLineY);
+        CanvasHelper.DrawLine(cLineStart, new Vector2(CanvasHelper.sharedContext.canvas.width, cLineY), Solver.separatingLineThickness);
+        let cAnswerDraw: Vector2 = Vector2.Add(cLineStart, Solver.drawStartPos);
+        CanvasHelper.DrawText("Interpretacja parametrów i reszty modelu", cAnswerDraw, 18, "left");
+
+        for (let i = 0; i < a.RowNumber; i++)
+        {
+            cAnswerDraw = Vector2.Add(cAnswerDraw, new Vector2(0, Solver.lineMargin));
+            const ai = this.Round(a.numbers[i][0]);
+            let change: string;
+
+            if (ai === 0) change = "nie zmieni wartości";
+            else change = `${ai < 0 ? "zmaleje" : "wzrośnie"} o ${Math.abs(ai)}`;
+
+            const text: string = `Jeżeli zmienna X${Utils.NumberToSubscript(i + 1)} wzrośnie o 1 to zmienna Y ${change} (ceteris paribus)`;
+            CanvasHelper.DrawText(text, cAnswerDraw, 18, "left");
+        }
+
+        cAnswerDraw = Vector2.Add(cAnswerDraw, new Vector2(0, Solver.lineMargin));
+        CanvasHelper.DrawText("Reszty modelu:", cAnswerDraw, 18, "left");
+        cAnswerDraw = Vector2.Add(cAnswerDraw, new Vector2(0, Solver.lineMargin));
+        e.Transpose().Draw(cAnswerDraw, "e");
+
+        //#endregion
         //#endregion
         //#endregion
     }

@@ -166,6 +166,7 @@ export class CatalysisEffectSolver extends Solver
             }
         }
 
+        //#region hellwig
         const hellwigLineY = R_reg.LastDrawPosition.y + R_reg.PixelHeight + 25;
         const hellwigStartPos: Vector2 = new Vector2(0, hellwigLineY);
         CanvasHelper.DrawLine(hellwigStartPos, new Vector2(CanvasHelper.sharedContext.canvas.width, hellwigLineY), Solver.separatingLineThickness);
@@ -188,6 +189,7 @@ export class CatalysisEffectSolver extends Solver
         }
 
         CanvasHelper.DrawText(hellwigAnswerText, hellwigAnswerDraw, 18, "left");
+        //#endregion
         //#endregion
     }
 
