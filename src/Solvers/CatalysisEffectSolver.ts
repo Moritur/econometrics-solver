@@ -157,12 +157,12 @@ export class CatalysisEffectSolver extends Solver
 
             for (let i = 0; i < catalysisPairs.length; i++)
             {
-                const drawY = (topMargin * 2) + ((iterations + i) * lineMargin);
+                const drawY = topMargin + (i * lineMargin);
                 const catPair: CatalysisPair = catalysisPairs[i];
                 const subI = Utils.NumberToSubscript(catPair.i + 1);
                 const subJ = Utils.NumberToSubscript(catPair.j + 1);
                 const text = `Katalizatorem w parze x${subI} x${subJ} jest x${catPair.isICatalyst ? subI : subJ}`;
-                CanvasHelper.DrawText(text, new Vector2(RijDrawX, drawY), 18, "left");
+                CanvasHelper.DrawText(text, new Vector2(RijDrawX + 800, drawY), 18, "left");
             }
         }
 
