@@ -221,10 +221,10 @@ export class CatalysisEffectSolver extends Solver
         const iterations = absR0.length;
         for (let i = 0; i < iterations; i++)
         {
-            let index: number = CatalysisEffectSolver.GetGreatestNumberIndex(absR0);
+            let index: number = CatalysisEffectSolver.GetSmallesttNumberIndex(absR0);
             R0ids[i] = index;
             sortedR0[i] = absR0[index];
-            absR0[index] = -1;
+            absR0[index] = Number.POSITIVE_INFINITY;
         }
         
         return [new Matrix([sortedR0]), R0ids];
@@ -263,7 +263,7 @@ export class CatalysisEffectSolver extends Solver
         return new Matrix(rows);
     }
 
-    /** Returns index of greatest number in provided array.
+    /** Returns index of the greatest number in provided array.
      * If same number appears multiple times returns index of its first occurrence
      */
     private static GetGreatestNumberIndex(array: ReadonlyArray<number>): number
@@ -272,6 +272,20 @@ export class CatalysisEffectSolver extends Solver
         for (let i = 0; i < array.length; i++)
         {
             if (array[i] > array[index]) index = i;
+        }
+
+        return index;
+    }
+
+    /** Returns index of the smallest number in provided array.
+    * If same number appears multiple times returns index of its first occurrence
+    */
+    private static GetSmallesttNumberIndex(array: ReadonlyArray<number>): number
+    {
+        let index: number = 0;
+        for (let i = 0; i < array.length; i++)
+        {
+            if (array[i] < array[index]) index = i;
         }
 
         return index;
